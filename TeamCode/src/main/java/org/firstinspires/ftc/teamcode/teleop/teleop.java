@@ -12,15 +12,11 @@ import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.PedroCoordinates;
-import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.Bot;
 import org.firstinspires.ftc.teamcode.Vision.Vision;
 import org.firstinspires.ftc.teamcode.commands.TeleopDriveCommand;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
@@ -127,20 +123,14 @@ public class teleop extends CommandOpMode {
                         )
                 );
 
-
-
-
-
         while (opModeInInit()){
             telem.update();
         }
-        //endregion
 
 
     }
     @Override
     public void run() {
-        //periodicBindings();
         CommandScheduler.getInstance().run();
         telem.update();
     }

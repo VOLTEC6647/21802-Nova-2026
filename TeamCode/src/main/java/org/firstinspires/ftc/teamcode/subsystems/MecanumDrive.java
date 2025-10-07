@@ -76,9 +76,9 @@ public class MecanumDrive extends SubsystemBase {
         backLeft = bot.hMap.get(DcMotorEx.class, "BL");
         backRight = bot.hMap.get(DcMotorEx.class, "BR");
 
-        frontLeft.setDirection(DcMotorSimple.Direction.FORWARD);
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
         backLeft.setDirection(DcMotorSimple.Direction.FORWARD);
-        frontRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
         backRight.setDirection(DcMotorSimple.Direction.REVERSE);
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -96,7 +96,7 @@ public class MecanumDrive extends SubsystemBase {
         follower.update();
 
         //Automated PathFollowing
-        if (bot.driver.gamepad.a) {
+       /* if (bot.driver.gamepad.a) {
             follower.followPath(pathChain.get());
             automatedDrive = true;
         }
@@ -104,7 +104,7 @@ public class MecanumDrive extends SubsystemBase {
         if (automatedDrive && bot.driver.gamepad.b) {
             follower.startTeleopDrive();
             automatedDrive = false;
-        }
+        }*/
 
         Pose position = new Pose(odo.getEncoderX(), odo.getEncoderY(), odo.getHeading(AngleUnit.RADIANS));
 
@@ -115,7 +115,6 @@ public class MecanumDrive extends SubsystemBase {
         bot.telem.addData("FieldCentric",fieldCentric);
 
     }
-
 
     public void teleopDrive(double x , double y, double rx, double multiplier) {
 
@@ -133,9 +132,9 @@ public class MecanumDrive extends SubsystemBase {
             rotX *= 1.1; // counteract imperfect strafe
 
             double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-            double frontLeftPower = (rotY + rotX + rx) / denominator;
+            double frontLeftPower = (-rotY + rotX + rx) / denominator;
             double backLeftPower = (rotY - rotX + rx) / denominator;
-            double frontRightPower = (rotY - rotX - rx) / denominator;
+            double frontRightPower = (-rotY - rotX - rx) / denominator;
             double backRightPower = (rotY + rotX - rx) / denominator;
 
             double[] powers = {frontLeftPower, frontRightPower, backLeftPower, backRightPower};
