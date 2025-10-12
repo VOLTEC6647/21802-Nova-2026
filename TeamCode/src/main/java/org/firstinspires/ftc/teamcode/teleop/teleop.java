@@ -96,7 +96,7 @@ public class teleop extends CommandOpMode {
         new GamepadButton(driverGamepad, GamepadKeys.Button.A)
                 .whileHeld(
                         new SequentialCommandGroup(
-                                new InstantCommand(()-> shooter.setPower(-1)),
+                                new InstantCommand(()-> shooter.setVelocity()),
                                 new InstantCommand(()-> intake.setPower(1))
                         )
                 );
@@ -104,7 +104,7 @@ public class teleop extends CommandOpMode {
                 driverGamepad, GamepadKeys.Button.A)
                 .whenReleased(
                         new SequentialCommandGroup(
-                                new InstantCommand(()-> shooter.setPower(0)),
+                                new InstantCommand(()-> shooter.setVelocity()),
                                 new InstantCommand(()-> intake.setPower(0))
 
                         )
