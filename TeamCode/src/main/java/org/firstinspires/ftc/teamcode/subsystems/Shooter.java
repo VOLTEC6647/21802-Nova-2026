@@ -56,7 +56,6 @@ public class Shooter implements Subsystem {
 
         bot.telem.addData("Target Velocity", targetVelocity);
         bot.telem.addData("Current Velocity", currentVelocity);
-        bot.telem.update();
 
 
     }

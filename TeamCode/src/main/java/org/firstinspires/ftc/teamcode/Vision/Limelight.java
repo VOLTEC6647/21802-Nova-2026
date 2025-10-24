@@ -1,11 +1,12 @@
-/*package org.firstinspires.ftc.teamcode.Vision;
+package org.firstinspires.ftc.teamcode.Vision;
 
-import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.arcrobotics.ftclib.command.Subsystem;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.Bot;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
@@ -31,8 +32,9 @@ public class Limelight implements Subsystem {
             if (result.isValid()) {
                 Pose3D botpose = result.getBotpose();
                 MecanumDrive.odo.setPosition(
-                        new Pose(result.getBotpose().getPosition().x,
+                        new Pose2D(DistanceUnit.INCH,result.getBotpose().getPosition().x,
                                 result.getBotpose().getPosition().y,
+                                AngleUnit.RADIANS,
                                 result.getBotpose().getOrientation().getYaw(AngleUnit.RADIANS)
                         )
                 );
@@ -43,4 +45,4 @@ public class Limelight implements Subsystem {
             }
         }
     }
-}*/
+}

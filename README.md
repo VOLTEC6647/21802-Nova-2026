@@ -30,7 +30,7 @@ If you are an Android Studio programmer, there are several ways to download this
 
 * The Releases page also contains prebuilt APKs.
 
-Once you have downloaded and uncompressed (if needed) your folder, you can use Android Studio to import the folder  ("Import project (Eclipse ADT, Gradle, etc.)").
+Once you have downloa ded and uncompressed (if needed) your folder, you can use Android Studio to import the folder  ("Import project (Eclipse ADT, Gradle, etc.)").
 
 ## Getting Help
 ### User Documentation and Tutorials

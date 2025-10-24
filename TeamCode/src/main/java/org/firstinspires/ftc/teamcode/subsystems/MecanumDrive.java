@@ -22,6 +22,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Bot;
+import org.firstinspires.ftc.teamcode.Vision.Vision;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Config
@@ -30,12 +31,13 @@ public class MecanumDrive extends SubsystemBase {
     private final Follower follower;
     private final IMU imu = null;
     private final DcMotorEx frontLeft, frontRight, backLeft, backRight;
-    public GoBildaPinpointDriver odo;
+    public static GoBildaPinpointDriver odo;
     public static boolean fieldCentric = true;
     private boolean automatedDrive;
     private final Supplier<PathChain> pathChain;
     public static Pose pose;
     public static Pose2D pose2D;
+    Vision vision;
     private boolean isEncoderMode = false;
     public static Pose startingPose = new Pose(62.5,9.08,0,PedroCoordinates.INSTANCE); //See ExampleAuto to understand how to use this
 
@@ -45,6 +47,9 @@ public class MecanumDrive extends SubsystemBase {
 
     public MecanumDrive(Bot bot) {
         this.bot = bot;
+
+        vision = new Vision(bot);
+        vision.register();
 
         odo = bot.hMap.get(GoBildaPinpointDriver.class,"pinpoint");
         odo.setOffsets(-82.66924000028, 110.830759999962, DistanceUnit.INCH);
@@ -94,6 +99,12 @@ public class MecanumDrive extends SubsystemBase {
     public void periodic() {
 
         follower.update();
+        if(bot.driver.gamepad.a){
+            teleopDrive(0,0, vision.getTurnPower(), 1);
+        }
+        else {
+            teleopDrive(0,0,0,1);
+        }
 
         //Automated PathFollowing
        /* if (bot.driver.gamepad.a) {
@@ -122,9 +133,14 @@ public class MecanumDrive extends SubsystemBase {
          y = -bot.driver.getLeftY() * multiplier;
 
 
+         if (bot.driver.gamepad.start){
+             odo.resetPosAndIMU();
+         }
+
+
             rx *= -bot.rotMultiplier;
 
-            double botHeading = pose.getHeading();
+            double botHeading = odo.getHeading(AngleUnit.RADIANS);
 
             double rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
             double rotY = x * Math.sin(botHeading) + y * Math.cos(botHeading);

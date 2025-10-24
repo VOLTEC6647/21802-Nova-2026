@@ -17,13 +17,11 @@ import java.io.File;
 
 @Config
 public class Vision extends SubsystemBase {
-    private final PIDFController pid = new PIDFController(0.2, 0, 0.0, 0.0);
 
     private final Limelight3A camera;
-    @Getter private boolean isDataOld = false;
     @Getter private LLResult result;
 
-    public static double TURN_P = 0.2;
+    public static double TURN_P = 0.05;
 
 
 
@@ -35,6 +33,8 @@ public class Vision extends SubsystemBase {
         camera = bot.hMap.get(Limelight3A.class, "limelight");
 
         camera.pipelineSwitch(0);
+        initializeCamera();
+
     }
 
     public void initializeCamera() {
@@ -43,50 +43,46 @@ public class Vision extends SubsystemBase {
     }
 
     public double getTurnPower() {
-        if (!isTargetVisible()) {
+        if (!result.isValid()) {
             return 0.0;
         }
-        double tx = getTx(0.0);
+        double tx = getTx();
 
-        double turnPower = tx * TURN_P;
-
-        return turnPower;
+        return -tx * TURN_P;
     }
 
-    public double getTx(double defaultValue) {
+    public double getTx() {
         if (result == null) {
-            return defaultValue;
+            return 0;
         }
         return result.getTx();
     }
 
-    public double getTy(double defaultValue) {
+    public double getTy() {
         if (result == null) {
-            return defaultValue;
+            return 0;
         }
         return result.getTy();
     }
 
-    public boolean isTargetVisible() {
-        if (result == null) {
-            return false;
-        }
-        return !MathUtils.isNear(0, result.getTa(), 0.0001);
-    }
+
 
 
 
     @Override
     public void periodic() {
-        /*result = camera.getLatestResult();
+        result = camera.getLatestResult();
 
         if (result != null) {
 
-            long staleness = result.getStaleness();
-            isDataOld = staleness >= 100;
-            bot.telem.addData("Distance", getDistance());
-            bot.telem.addData("Angle", getTurnServoDegree());
+            bot.telem.addData("Turn Power", getTurnPower());
+            bot.telem.addData("Ty", getTy());
+            bot.telem.addData("Tx", getTx());
+        }
 
-        }*/
+
+
     }
+
+
 }
