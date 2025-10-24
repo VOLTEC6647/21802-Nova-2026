@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
 import java.io.File;
 
@@ -36,6 +37,7 @@ public class teleop extends CommandOpMode {
     private Shooter shooter;
     private Intake intake;
     private Indexer indexer;
+    private Turret turret;
 
 
     public void initialize() {
@@ -80,6 +82,10 @@ public class teleop extends CommandOpMode {
         drive = new MecanumDrive(bot);
         drive.register();
 
+        turret = new Turret(bot);
+        turret.register();
+
+
         TeleopDriveCommand driveCommand = new TeleopDriveCommand(
                 drive,
                 () -> driverGamepad.getLeftY(),
@@ -91,6 +97,7 @@ public class teleop extends CommandOpMode {
         );
         drive.setDefaultCommand(driveCommand);
         bot.speed = 1;
+
 
 
         new GamepadButton(driverGamepad, GamepadKeys.Button.A)
@@ -109,6 +116,8 @@ public class teleop extends CommandOpMode {
 
                         )
                 );
+
+        //INDEXER
         new GamepadButton(driverGamepad, GamepadKeys.Button.X)
                 .whileHeld(
                         new SequentialCommandGroup(

@@ -51,6 +51,7 @@ public class Elevator implements AnyArm {
         motorRotate.setDirection(DcMotorSimple.Direction.REVERSE);
         motorRotate.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+
         motor2 = bot.hMap.get(DcMotor.class, "motor2");
 
         dashboard.sendTelemetryPacket(packet);

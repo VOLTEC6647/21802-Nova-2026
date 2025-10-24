@@ -3,17 +3,18 @@ package org.firstinspires.ftc.teamcode.Vision;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.SubsystemBase;
-import com.arcrobotics.ftclib.controller.PIDFController;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.util.ReadWriteFile;
 
 import lombok.Getter;
-import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
-import org.firstinspires.ftc.teamcode.Bot;
-import org.firstinspires.ftc.teamcode.utils.MathUtils;
 
-import java.io.File;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
+import org.firstinspires.ftc.teamcode.Bot;
+import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 
 @Config
 public class Vision extends SubsystemBase {
@@ -32,7 +33,7 @@ public class Vision extends SubsystemBase {
         this.bot = bot;
         camera = bot.hMap.get(Limelight3A.class, "limelight");
 
-        camera.pipelineSwitch(0);
+        pipeline(1);
         initializeCamera();
 
     }
@@ -40,6 +41,9 @@ public class Vision extends SubsystemBase {
     public void initializeCamera() {
         camera.setPollRateHz(100);
         camera.start();
+    }
+    public void pipeline(int switchPipeline){
+        camera.pipelineSwitch(switchPipeline);
     }
 
     public double getTurnPower() {
@@ -67,22 +71,27 @@ public class Vision extends SubsystemBase {
 
 
 
-
-
     @Override
     public void periodic() {
         result = camera.getLatestResult();
 
         if (result != null) {
+                if (result.isValid()) {
+                    Pose3D botpose = result.getBotpose();
+                    MecanumDrive.odo.setPosition(
+                            new Pose2D(DistanceUnit.INCH,result.getBotpose().getPosition().x,
+                                    result.getBotpose().getPosition().y,
+                                    AngleUnit.RADIANS,
+                                    result.getBotpose().getOrientation().getYaw(AngleUnit.RADIANS)
+                            )
+                    );
 
             bot.telem.addData("Turn Power", getTurnPower());
             bot.telem.addData("Ty", getTy());
             bot.telem.addData("Tx", getTx());
+            bot.telem.addData("Bot pose", botpose.toString());
+
+            }
         }
-
-
-
     }
-
-
 }

@@ -28,6 +28,9 @@ public class Shooter implements Subsystem {
         motor1 = bot.hMap.get(DcMotorEx.class, "motor1");
         motor2 = bot.hMap.get(DcMotorEx.class, "motor2");
 
+        motor1.setMotorEnable();
+        motor2.setMotorEnable();
+
         motor1.setDirection(DcMotorSimple.Direction.REVERSE);
 
         motor1.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);

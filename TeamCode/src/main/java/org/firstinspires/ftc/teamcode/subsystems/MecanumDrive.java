@@ -99,13 +99,16 @@ public class MecanumDrive extends SubsystemBase {
     public void periodic() {
 
         follower.update();
-        if(bot.driver.gamepad.a){
+        if(bot.driver.gamepad.left_bumper){
             teleopDrive(0,0, vision.getTurnPower(), 1);
         }
         else {
             teleopDrive(0,0,0,1);
         }
 
+        if (bot.driver.gamepad.start){
+            odo.resetPosAndIMU();
+        }
         //Automated PathFollowing
        /* if (bot.driver.gamepad.a) {
             follower.followPath(pathChain.get());
@@ -133,9 +136,6 @@ public class MecanumDrive extends SubsystemBase {
          y = -bot.driver.getLeftY() * multiplier;
 
 
-         if (bot.driver.gamepad.start){
-             odo.resetPosAndIMU();
-         }
 
 
             rx *= -bot.rotMultiplier;

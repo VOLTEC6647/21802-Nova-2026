@@ -2,12 +2,12 @@ package org.firstinspires.ftc.teamcode.commands;
 
 
 import com.arcrobotics.ftclib.command.CommandBase;
-import com.bylazar.field.Drawable;
-import com.bylazar.field.Style;
 import com.pedropathing.follower.Follower;
 
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
+
+import org.firstinspires.ftc.teamcode.pedroPathing.Tuning;
 
 
 // Credit 21802 bc im lazy
@@ -45,6 +45,8 @@ public class FollowPathCommand extends CommandBase {
     @Override
     public void execute() {
         follower.update();
+        Tuning.drawCurrent();
+
 
 
 

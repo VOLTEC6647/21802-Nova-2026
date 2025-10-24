@@ -41,7 +41,7 @@ public class Limelight implements Subsystem {
 
                 bot.telem.addData("tx", result.getTx());
                 bot.telem.addData("ty", result.getTy());
-                bot.telem.addData("Botpose", botpose.toString());
+                bot.telem.addData("Bot pose", botpose.toString());
             }
         }
     }
