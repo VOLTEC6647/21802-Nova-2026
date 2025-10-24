@@ -63,6 +63,7 @@ public class teleop extends CommandOpMode {
 
         if (team.equals("blue")){
             bot.setRotationOffset(Rotation2d.fromDegrees(0));
+
         }
         if (team.equals("red")){
             bot.setRotationOffset(Rotation2d.fromDegrees(0));
