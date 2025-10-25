@@ -33,7 +33,7 @@ public class Vision extends SubsystemBase {
         this.bot = bot;
         camera = bot.hMap.get(Limelight3A.class, "limelight");
 
-        pipeline(1);
+        pipeline(0);
         initializeCamera();
 
     }
@@ -76,22 +76,14 @@ public class Vision extends SubsystemBase {
         result = camera.getLatestResult();
 
         if (result != null) {
-                if (result.isValid()) {
-                    Pose3D botpose = result.getBotpose();
-                    MecanumDrive.odo.setPosition(
-                            new Pose2D(DistanceUnit.INCH,result.getBotpose().getPosition().x,
-                                    result.getBotpose().getPosition().y,
-                                    AngleUnit.RADIANS,
-                                    result.getBotpose().getOrientation().getYaw(AngleUnit.RADIANS)
-                            )
-                    );
+
+
 
             bot.telem.addData("Turn Power", getTurnPower());
             bot.telem.addData("Ty", getTy());
             bot.telem.addData("Tx", getTx());
-            bot.telem.addData("Bot pose", botpose.toString());
 
-            }
+
         }
     }
 }

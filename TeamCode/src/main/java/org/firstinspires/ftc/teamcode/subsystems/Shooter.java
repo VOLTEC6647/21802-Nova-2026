@@ -13,12 +13,12 @@ public class Shooter implements Subsystem {
     private DcMotorEx motor2;
     @Config
     public static class ShooterPIDF{
-        public static double kp = 0.009;
-        static double ki = 0;
-        static double kd = 0;
-        public static double kf = 0;
+        public static double kp = 1;
+        public static double ki = 0;
+        public static double kd = 0.05;
+        public static double kf = -0.005;
     }
-    public static double targetVelocity = 6000;
+    public static double targetVelocity = -1305;
     private Bot bot;
 
 
@@ -28,13 +28,9 @@ public class Shooter implements Subsystem {
         motor1 = bot.hMap.get(DcMotorEx.class, "motor1");
         motor2 = bot.hMap.get(DcMotorEx.class, "motor2");
 
-        motor1.setMotorEnable();
-        motor2.setMotorEnable();
-
         motor1.setDirection(DcMotorSimple.Direction.REVERSE);
 
         motor1.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        motor2.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
 
         motor1.setVelocityPIDFCoefficients(
@@ -44,12 +40,6 @@ public class Shooter implements Subsystem {
                 ShooterPIDF.kf
         );
 
-        motor2.setVelocityPIDFCoefficients(
-                ShooterPIDF.kp,
-                ShooterPIDF.ki,
-                ShooterPIDF.kd,
-                ShooterPIDF.kf
-        );
 
     }
 

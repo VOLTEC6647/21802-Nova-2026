@@ -82,9 +82,9 @@ public class MecanumDrive extends SubsystemBase {
         backRight = bot.hMap.get(DcMotorEx.class, "BR");
 
         frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeft.setDirection(DcMotorSimple.Direction.FORWARD);
-        frontRight.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRight.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontRight.setDirection(DcMotorSimple.Direction.FORWARD);
+        backRight.setDirection(DcMotorSimple.Direction.FORWARD );
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -107,10 +107,10 @@ public class MecanumDrive extends SubsystemBase {
         }
 
         if (bot.driver.gamepad.start){
-            odo.resetPosAndIMU();
+            odo.recalibrateIMU();
         }
-        //Automated PathFollowing
-       /* if (bot.driver.gamepad.a) {
+        //Automated Parking
+        if (bot.driver.gamepad.a) {
             follower.followPath(pathChain.get());
             automatedDrive = true;
         }
@@ -118,7 +118,7 @@ public class MecanumDrive extends SubsystemBase {
         if (automatedDrive && bot.driver.gamepad.b) {
             follower.startTeleopDrive();
             automatedDrive = false;
-        }*/
+        }
 
         Pose position = new Pose(odo.getEncoderX(), odo.getEncoderY(), odo.getHeading(AngleUnit.RADIANS));
 
@@ -133,24 +133,22 @@ public class MecanumDrive extends SubsystemBase {
     public void teleopDrive(double x , double y, double rx, double multiplier) {
 
          x = bot.driver.getLeftX() * multiplier;
-         y = -bot.driver.getLeftY() * multiplier;
-
-
+         y = bot.driver.getLeftY() * multiplier;
 
 
             rx *= -bot.rotMultiplier;
 
             double botHeading = odo.getHeading(AngleUnit.RADIANS);
 
-            double rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
-            double rotY = x * Math.sin(botHeading) + y * Math.cos(botHeading);
+            double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+            double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
 
             rotX *= 1.1; // counteract imperfect strafe
 
             double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rx), 1);
-            double frontLeftPower = (-rotY + rotX + rx) / denominator;
+            double frontLeftPower = (rotY + rotX + rx) / denominator;
             double backLeftPower = (rotY - rotX + rx) / denominator;
-            double frontRightPower = (-rotY - rotX - rx) / denominator;
+            double frontRightPower = (rotY - rotX - rx) / denominator;
             double backRightPower = (rotY + rotX - rx) / denominator;
 
             double[] powers = {frontLeftPower, frontRightPower, backLeftPower, backRightPower};
