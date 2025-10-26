@@ -21,23 +21,19 @@ import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
-import org.firstinspires.ftc.teamcode.subsystems.Turret;
-
 import java.io.File;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "TeleOp", group = "TeleOp")
 public class teleop extends CommandOpMode {
     private Bot bot;
-    private Vision vision;
-    private Follower follower;
     private MultipleTelemetry telem;
     private GamepadEx driverGamepad;
     private GamepadEx operatorGamepad;
-    private MecanumDrive drive;
     private Shooter shooter;
     private Intake intake;
     private Indexer indexer;
-
+    private Vision vision;
+    private MecanumDrive drive;
 
     public void initialize() {
 
@@ -98,6 +94,7 @@ public class teleop extends CommandOpMode {
 
 
 
+
         new GamepadButton(driverGamepad, GamepadKeys.Button.A)
                 .whileHeld(
                         new SequentialCommandGroup(
@@ -129,6 +126,7 @@ public class teleop extends CommandOpMode {
                                 new InstantCommand(()-> indexer.setPower(0))
                         )
                 );
+
 
         while (opModeInInit()){
             telem.update();

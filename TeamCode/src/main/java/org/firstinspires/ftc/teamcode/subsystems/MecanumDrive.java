@@ -2,6 +2,11 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 
 import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.command.Command;
+import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.command.InstantCommand;
+import com.arcrobotics.ftclib.command.ParallelCommandGroup;
+import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.pedropathing.follower.Follower;
@@ -23,23 +28,24 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.Bot;
 import org.firstinspires.ftc.teamcode.Vision.Vision;
+import org.firstinspires.ftc.teamcode.autos.AutoExample;
+import org.firstinspires.ftc.teamcode.commands.FollowPathCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Config
 public class MecanumDrive extends SubsystemBase {
     private final Bot bot;
-    private final Follower follower;
     private final IMU imu = null;
     private final DcMotorEx frontLeft, frontRight, backLeft, backRight;
     public static GoBildaPinpointDriver odo;
-    public static boolean fieldCentric = true;
-    private boolean automatedDrive;
-    private final Supplier<PathChain> pathChain;
     public static Pose pose;
     public static Pose2D pose2D;
-    Vision vision;
-    private boolean isEncoderMode = false;
-    public static Pose startingPose = new Pose(62.5,9.08,0,PedroCoordinates.INSTANCE); //See ExampleAuto to understand how to use this
+    private Vision vision;
+    public static Pose startingPose = new Pose(56,8,0, PedroCoordinates.INSTANCE);
+    public static Pose parkPose = new Pose(38.4, 33.8, Math.toRadians(0));
+    private final Follower f;
+    private final SequentialCommandGroup autoPark;
+
 
     public Rotation2d getRobotOrientation() {
         return new Rotation2d(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS));
@@ -51,6 +57,31 @@ public class MecanumDrive extends SubsystemBase {
         vision = new Vision(bot);
         vision.register();
 
+        f = Constants.createFollower(bot.hMap);
+        f.setStartingPose(startingPose);
+        f.update();
+
+        autoPark = new SequentialCommandGroup(
+
+                new SequentialCommandGroup(
+
+                        new ParallelCommandGroup(
+                                new FollowPathCommand(f, f.pathBuilder()
+                                        .addPath(
+                                                new BezierLine(
+                                                        f.getPose(),
+                                                        parkPose
+                                                )
+                                        )
+                                        .setConstantHeadingInterpolation(parkPose.getHeading())
+                                        .build()
+                                )
+                        )
+
+                )
+        );
+
+
         odo = bot.hMap.get(GoBildaPinpointDriver.class,"pinpoint");
         odo.setOffsets(-82.66924000028, 110.830759999962, DistanceUnit.INCH);
         odo.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
@@ -60,21 +91,6 @@ public class MecanumDrive extends SubsystemBase {
             pose2D = new Pose2D(DistanceUnit.INCH,0,0,AngleUnit.RADIANS,0);
         }
         odo.setPosition(pose2D);
-
-        follower = Constants.createFollower(bot.hMap);
-        follower.setStartingPose(startingPose);
-        follower.update();
-
-
-        pathChain = () -> follower.pathBuilder()
-                .addPath(new Path(
-                        new BezierLine(
-                                follower::getPose,
-                                new Pose(69.56307692307692, 74.43692307692308))))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(follower::getHeading,
-                        Math.toRadians(45), 0.8))
-                .build();
-
 
         frontLeft = bot.hMap.get(DcMotorEx.class, "FL");
         frontRight = bot.hMap.get(DcMotorEx.class, "FR");
@@ -91,14 +107,14 @@ public class MecanumDrive extends SubsystemBase {
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-
-
     }
+
+
+
 
     @Override
     public void periodic() {
 
-        follower.update();
         if(bot.driver.gamepad.left_bumper){
             teleopDrive(0,0, vision.getTurnPower(), 1);
         }
@@ -109,24 +125,22 @@ public class MecanumDrive extends SubsystemBase {
         if (bot.driver.gamepad.start){
             odo.recalibrateIMU();
         }
-        //Automated Parking
-        if (bot.driver.gamepad.a) {
-            follower.followPath(pathChain.get());
-            automatedDrive = true;
+        if (bot.driver.gamepad.dpad_left){
+            CommandScheduler.getInstance().schedule(autoPark);
         }
-        //Stop automated
-        if (automatedDrive && bot.driver.gamepad.b) {
-            follower.startTeleopDrive();
-            automatedDrive = false;
+        if (bot.driver.gamepad.dpad_right) {
+            f.startTeleopDrive();
         }
+
+
+
+
 
         Pose position = new Pose(odo.getEncoderX(), odo.getEncoderY(), odo.getHeading(AngleUnit.RADIANS));
 
         odo.update();
         pose = position;
 
-        bot.telem.addData("EncoderMode",isEncoderMode);
-        bot.telem.addData("FieldCentric",fieldCentric);
 
     }
 
@@ -159,6 +173,10 @@ public class MecanumDrive extends SubsystemBase {
             backLeft.setPower(normalizedPowers[2]);
             backRight.setPower(normalizedPowers[3]);
     }
+
+
+
+
 
     public void resetEncoders() {
         backLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);

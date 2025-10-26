@@ -30,8 +30,7 @@ public class AutoExample extends LinearOpMode {
     // Scoring Poses
     public static Pose startingPose = new Pose(9, 87, Math.toRadians(0));
     public static Pose chamberPose = new Pose(36, 75, Math.toRadians(0));
-
-
+    private Follower follower;
     private Bot bot;
     private MultipleTelemetry telem;
     private GamepadEx driverGamepad;
