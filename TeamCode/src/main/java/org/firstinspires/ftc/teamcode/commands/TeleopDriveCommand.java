@@ -34,7 +34,8 @@ public class TeleopDriveCommand extends CommandBase {
                 rightStickY.getAsDouble(),
                 rightStickX.getAsDouble(),
                 leftStickX.getAsDouble(),
-                multiplier.getAsDouble()
+                multiplier.getAsDouble(),
+                leftStickX.getAsDouble()
         );
     }
 }

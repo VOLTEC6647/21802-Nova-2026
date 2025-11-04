@@ -1,14 +1,18 @@
 
 package org.firstinspires.ftc.teamcode.Vision;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import lombok.Getter;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
@@ -23,15 +27,13 @@ public class Vision extends SubsystemBase {
     @Getter private LLResult result;
 
     public static double TURN_P = 0.05;
+    private MultipleTelemetry telemetry;
 
 
 
-    private Bot bot;
-
-
-    public Vision(Bot bot) {
-        this.bot = bot;
-        camera = bot.hMap.get(Limelight3A.class, "limelight");
+    public Vision(HardwareMap hardwareMap, Telemetry telemetry) {
+        this.telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        camera = hardwareMap.get(Limelight3A.class, "limelight");
 
         pipeline(0);
         initializeCamera();
@@ -79,9 +81,9 @@ public class Vision extends SubsystemBase {
 
 
 
-            bot.telem.addData("Turn Power", getTurnPower());
-            bot.telem.addData("Ty", getTy());
-            bot.telem.addData("Tx", getTx());
+            telemetry.addData("Turn Power", getTurnPower());
+            telemetry.addData("Ty", getTy());
+            telemetry.addData("Tx", getTx());
 
 
         }

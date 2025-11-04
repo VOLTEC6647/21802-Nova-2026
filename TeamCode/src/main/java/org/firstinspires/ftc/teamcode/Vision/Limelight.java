@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Vision;
 
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.arcrobotics.ftclib.command.Subsystem;
@@ -15,6 +17,7 @@ import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 public class Limelight implements Subsystem {
     private Bot bot;
     private Limelight3A limelight;
+    private Follower follower;
 
     public Limelight(Bot bot){
         this.bot = bot;
@@ -31,10 +34,9 @@ public class Limelight implements Subsystem {
         if (result != null) {
             if (result.isValid()) {
                 Pose3D botpose = result.getBotpose();
-                MecanumDrive.odo.setPosition(
-                        new Pose2D(DistanceUnit.INCH,result.getBotpose().getPosition().x,
+                follower.setPose(
+                        new Pose(result.getBotpose().getPosition().x,
                                 result.getBotpose().getPosition().y,
-                                AngleUnit.RADIANS,
                                 result.getBotpose().getOrientation().getYaw(AngleUnit.RADIANS)
                         )
                 );

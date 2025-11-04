@@ -16,6 +16,7 @@ public class FollowPathCommand extends CommandBase {
     private final Follower follower;
     private final PathChain path;
     private boolean holdEnd = true;
+    Tuning tuning;
 
     public FollowPathCommand(Follower follower, PathChain path) {
         this.follower = follower;

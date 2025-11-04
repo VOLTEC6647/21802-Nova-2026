@@ -18,7 +18,7 @@ public class Bot extends Robot {
     private final IMU imu;
     public final Telemetry telem;
     public final HardwareMap hMap;
-    public final GamepadEx driver;
+    public final GamepadEx   driver;
     public final GamepadEx opertator;
     public double speed = 1;
     public double rotMultiplier = 1;
