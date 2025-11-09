@@ -33,13 +33,15 @@ public class Limelight implements Subsystem {
         LLResult result = limelight.getLatestResult();
         if (result != null) {
             if (result.isValid()) {
-                Pose3D botpose = result.getBotpose();
+                Pose3D botpose = result.getBotpose_MT2();
                 follower.setPose(
-                        new Pose(result.getBotpose().getPosition().x,
-                                result.getBotpose().getPosition().y,
-                                result.getBotpose().getOrientation().getYaw(AngleUnit.RADIANS)
+                        new Pose(result.getBotpose_MT2().getPosition().x,
+                                result.getBotpose_MT2().getPosition().y,
+                                result.getBotpose_MT2().getOrientation().getYaw(AngleUnit.RADIANS)
                         )
                 );
+
+
 
                 bot.telem.addData("tx", result.getTx());
                 bot.telem.addData("ty", result.getTy());

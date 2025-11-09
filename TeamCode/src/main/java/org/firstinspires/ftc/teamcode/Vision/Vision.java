@@ -5,6 +5,8 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.pedropathing.ftc.FTCCoordinates;
+import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -70,6 +72,17 @@ public class Vision extends SubsystemBase {
         }
         return result.getTy();
     }
+    public Pose mt2(double heading) {
+        camera.updateRobotOrientation(heading);
+
+        return new Pose(
+                result.getBotpose_MT2().getPosition().x,
+                result.getBotpose_MT2().getPosition().y,
+                result.getBotpose_MT2().getOrientation().getYaw(AngleUnit.RADIANS),
+                FTCCoordinates.INSTANCE)
+                .getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+    }
+
 
 
 
@@ -77,9 +90,10 @@ public class Vision extends SubsystemBase {
     public void periodic() {
         result = camera.getLatestResult();
 
+
         if (result != null) {
 
-
+            Pose3D botpose = result.getBotpose();
 
             telemetry.addData("Turn Power", getTurnPower());
             telemetry.addData("Ty", getTy());

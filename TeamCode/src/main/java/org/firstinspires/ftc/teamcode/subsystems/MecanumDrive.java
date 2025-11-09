@@ -57,8 +57,8 @@ public class MecanumDrive extends SubsystemBase {
 
         rx *= -1;
 
-        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
-        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
+        double rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
+        double rotY = x * Math.sin(botHeading) + y * Math.cos(  botHeading);
 
         rotX *= 1.1; // counteract imperfect strafe
 

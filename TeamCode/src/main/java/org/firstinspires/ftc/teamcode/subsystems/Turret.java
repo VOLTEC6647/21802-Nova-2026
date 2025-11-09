@@ -9,6 +9,7 @@ import com.arcrobotics.ftclib.command.Subsystem;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.geometry.Vector2d;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -21,9 +22,9 @@ public class Turret implements Subsystem {
 
     private final DcMotorEx turret;
     private MultipleTelemetry telemetry;
-    private final Vector2d BlueScore = new Vector2d(15.36, 129);
-    private final double TICKS_PER_DEGREE = 1.49;
-    private final Follower f;
+    private final Pose BlueScore = new Pose(15.36, 129);
+    private final double TICKS_PER_DEGREE =  22.76;
+    int targetPositionTicks = 0;
     @Config
     public static class TurretPIDF{
         public static double kp = 1;
@@ -47,8 +48,6 @@ public class Turret implements Subsystem {
         turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        f = Constants.createFollower(h);
-        f.setStartingPose(startPose);
 
 
     }
@@ -56,17 +55,20 @@ public class Turret implements Subsystem {
 
     @Override
     public void periodic(){
-        f.update();
 
 
+
+
+    }
+    public void setTurret(double x, double y, double heading){
         Vector2d targetVector = new Vector2d(
-                BlueScore.getX() - f.getPose().getX(),
-                BlueScore.getY() - f.getPose().getY()
+                BlueScore.getX() - x,
+                BlueScore.getY() - y
         );
 
         double targetAngleRadians = targetVector.angle();
 
-        double relativeAngleRadians = targetAngleRadians - f.getHeading();
+        double relativeAngleRadians = targetAngleRadians - heading;
 
         double relativeAngleDegrees = Math.toDegrees(relativeAngleRadians);
 
@@ -82,15 +84,13 @@ public class Turret implements Subsystem {
         double MaxAngleDegrees = Math.max(TURRET_MIN_ANGLE_DEGREES,
                 Math.min(TURRET_MAX_ANGLE_DEGREES, relativeAngleDegrees));
 
-        int targetPositionTicks = (int) (MaxAngleDegrees * TICKS_PER_DEGREE);
+        targetPositionTicks = (int) (MaxAngleDegrees * TICKS_PER_DEGREE);
 
         turret.setTargetPosition(targetPositionTicks);
 
         double pidOutput = pid.calculate(turret.getCurrentPosition(), targetPositionTicks);
 
         turret.setPower(pidOutput);
-
-
 
 
     }
