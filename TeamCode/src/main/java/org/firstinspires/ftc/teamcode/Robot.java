@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Vision.Vision;
+import org.firstinspires.ftc.teamcode.commands.StaticTeleopDriveCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
@@ -34,6 +35,7 @@ public class Robot {
     private final Vision v;
     private final MecanumDrive d;
     private final Follower f;
+    private final StaticTeleopDriveCommand staticDriveCommand;
     private boolean automatedDrive = false;
     public static Pose startPose = new Pose(56,8,0, PedroCoordinates.INSTANCE);
 
@@ -57,6 +59,17 @@ public class Robot {
 
         this.g1 = new Gamepad();
         this.g2 = new Gamepad();
+
+        // Initialize StaticTeleopDriveCommand with heading lock on right stick
+        staticDriveCommand = new StaticTeleopDriveCommand(
+                d,
+                f,
+                () -> -g1.left_stick_y,
+                () -> g1.left_stick_x,
+                () -> g1.left_stick_x,
+                () -> -g1.right_stick_x,
+                () -> 1.0
+        );
 
 
     }
@@ -86,13 +99,8 @@ public class Robot {
         }
 
         if (!automatedDrive) {
-            d.teleopDrive(
-                    -g1.left_stick_y,
-                    g1.left_stick_x,
-                    -g1.right_stick_x,
-                    1,
-                    f.getHeading()
-            );
+            // Use StaticTeleopDriveCommand with heading lock
+            staticDriveCommand.execute();
         }
 
 
