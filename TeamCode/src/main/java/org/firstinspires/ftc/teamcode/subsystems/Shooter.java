@@ -14,15 +14,14 @@ import org.firstinspires.ftc.teamcode.Bot;
 public class Shooter implements Subsystem {
 
     private DcMotorEx motor1;
-    private DcMotorEx motor2;
     @Config
     public static class ShooterPIDF{
-        public static double kp = 1;
-        public static double ki = 0;
-        public static double kd = 0.05;
-        public static double kf = -0.005;
+        public static double kp = 12.5  ;
+        public static double ki = 0.00;
+        public static double kd = 0.00;
+         public static double kf = 13.83;
     }
-    public static double targetVelocity = -1305;
+    public static double targetVelocity = -1900;
     private MultipleTelemetry telemetry;
 
 
@@ -31,8 +30,7 @@ public class Shooter implements Subsystem {
         this.telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
 
-        motor1 = hardwareMap.get(DcMotorEx.class, "motor1");
-        motor2 = hardwareMap.get(DcMotorEx.class, "motor2");
+        motor1 = hardwareMap.get(DcMotorEx.class, "shooter");
 
         motor1.setDirection(DcMotorSimple.Direction.REVERSE);
 
@@ -60,7 +58,7 @@ public class Shooter implements Subsystem {
     }
     public void setVelocity(){
         motor1.setVelocity(targetVelocity);
-        motor2.setVelocity(targetVelocity);
+
 
 
     }

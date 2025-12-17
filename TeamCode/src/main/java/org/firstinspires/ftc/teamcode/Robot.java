@@ -1,18 +1,22 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
+
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.pedropathing.follower.Follower;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.HeadingInterpolator;
 import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.Vision.Vision;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Indexer;
@@ -32,10 +36,9 @@ public class Robot {
     private final Intake i;
     private final Indexer iN;
     private final Vision v;
-    private final MecanumDrive d;
     private final Follower f;
     private boolean automatedDrive = false;
-    public static Pose startPose = new Pose(56,8,0, PedroCoordinates.INSTANCE);
+    public static Pose startPose = new Pose(55.75,7.3,0, PedroCoordinates.INSTANCE);
 
 
     public Robot(HardwareMap h, Telemetry t, Gamepad g1a, Gamepad g2a) {
@@ -45,12 +48,15 @@ public class Robot {
         this.g1a = g1a;
         this.g2a = g2a;
 
+
+
         tU = new Turret(this.h, this.t);
+        tU.resetEncoders();
         s = new Shooter(this.h,this.t);
-        i = new Intake(this.h,this.t);
+         i = new Intake(this.h,this.t);
         iN = new Indexer(this.h,this.t);
         v = new Vision(this.h,this.t);
-        d = new MecanumDrive(this.h,this.t);
+
 
         f = Constants.createFollower(this.h);
         f.setStartingPose(startPose);
@@ -65,7 +71,9 @@ public class Robot {
         g1.copy(g1a);
         g2.copy(g2a);
 
-        f.setPose(v.mt2(f.getHeading()));
+
+        f.setPose(v.mt(f.getPose().getX(),f.getPose().getY(),f.getPose().getHeading()));
+
 
         tU.setTurret(f.getPose().getX(),f.getPose().getY(),f.getPose().getHeading());
 
@@ -86,13 +94,9 @@ public class Robot {
         }
 
         if (!automatedDrive) {
-            d.teleopDrive(
-                    -g1.left_stick_y,
-                    g1.left_stick_x,
-                    -g1.right_stick_x,
-                    1,
-                    f.getHeading()
-            );
+            f.setTeleOpDrive(-g1.left_stick_y, -g1.left_stick_x,   g1.right_stick_x, false);
+
+
         }
 
 
@@ -111,12 +115,19 @@ public class Robot {
     public void tPeriodic() {
         tU.periodic();
         iN.periodic();
-        v.periodic();
         i.periodic();
-        s.periodic();
-        d.periodic();
+        s.periodic();  
+        //d.periodic();
         f.update();
         t.update();
+        TelemetryPacket posePacket = new TelemetryPacket();
+        posePacket.put("Pose x", f.getPose().getX());
+        posePacket.put("Pose y", f.getPose().getY());
+        posePacket.put("Pose heading", f.getPose().getHeading());
+        FtcDashboard.getInstance().sendTelemetryPacket(posePacket);
+        t.addData("Pose",f.getPose());
+        //v.periodic();
+
     }
     public void tStart() {
         f.startTeleopDrive();

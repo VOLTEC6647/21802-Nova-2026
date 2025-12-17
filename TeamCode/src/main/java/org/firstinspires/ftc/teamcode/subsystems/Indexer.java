@@ -24,7 +24,7 @@ public class Indexer implements Subsystem {
         this.telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         indexer = hardwareMap.get(CRServo.class,"indexer");
-
+        indexer.setDirection(DcMotorSimple.Direction.REVERSE);
     }
 
 
@@ -34,7 +34,7 @@ public class Indexer implements Subsystem {
     }
     public void setPower(double power){
         power = power;
-        indexer.setPower(power);
+        indexer.setPower(-power);
 
 
     }

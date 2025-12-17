@@ -1,14 +1,6 @@
 package org.firstinspires.ftc.teamcode.tests;
 
-import static org.firstinspires.ftc.teamcode.tests.setServo.targetServo.armPos;
-import static org.firstinspires.ftc.teamcode.tests.setServo.targetServo.clawPivot;
-import static org.firstinspires.ftc.teamcode.tests.setServo.targetServo.clawPos;
-import static org.firstinspires.ftc.teamcode.tests.setServo.targetServo.clawPosUp;
-import static org.firstinspires.ftc.teamcode.tests.setServo.targetServo.diffPosD;
-import static org.firstinspires.ftc.teamcode.tests.setServo.targetServo.diffPosDUp;
-import static org.firstinspires.ftc.teamcode.tests.setServo.targetServo.diffPosI;
-import static org.firstinspires.ftc.teamcode.tests.setServo.targetServo.diffPosIUp;
-import static org.firstinspires.ftc.teamcode.tests.setServo.targetServo.slidesPos;
+
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -18,6 +10,7 @@ import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 
 import org.firstinspires.ftc.teamcode.Bot;
+import org.firstinspires.ftc.teamcode.subsystems.Hood;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "SetServo", group = "Tools")
 public class setServo extends CommandOpMode {
@@ -25,6 +18,8 @@ public class setServo extends CommandOpMode {
     private MultipleTelemetry telem;
     private GamepadEx driverGamepad;
     private GamepadEx operatorGamepad;
+
+    Hood hood;
 
     public void initialize() {
 
@@ -41,25 +36,25 @@ public class setServo extends CommandOpMode {
         telem.addData("status","init");
         telem.update();
 
+        hood = new Hood(hardwareMap, telemetry);
+        hood.register();
+
+
     }
 
     @Config
     public static class targetServo{
-        public static double clawPos = 0;
-        public static double clawPivot = 0;
-        public static double slidesPos = 0;
-        public static double diffPosI = 0;
-        public static double diffPosD = 0;
-        public static double diffPosIUp = 0;
-        public static double diffPosDUp = 0;
-        public static double clawPosUp = 0;
-        public static double armPos = 0;
+        public static double hoodPos = 0;
 
     }
 
     @Override
     public void run() {
         CommandScheduler.getInstance().run();
+
+        hood.setPosition(targetServo.hoodPos);
+
+
 
 
 

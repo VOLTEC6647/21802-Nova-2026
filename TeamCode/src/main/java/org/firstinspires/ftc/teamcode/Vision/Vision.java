@@ -5,7 +5,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.SubsystemBase;
-import com.pedropathing.ftc.FTCCoordinates;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -19,8 +19,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.teamcode.Bot;
-import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 
 @Config
 public class Vision extends SubsystemBase {
@@ -30,6 +29,7 @@ public class Vision extends SubsystemBase {
 
     public static double TURN_P = 0.05;
     private MultipleTelemetry telemetry;
+
 
 
 
@@ -72,15 +72,45 @@ public class Vision extends SubsystemBase {
         }
         return result.getTy();
     }
-    public Pose mt2(double heading) {
-        camera.updateRobotOrientation(heading);
+    public Pose mt(double x, double y, double heading) {
+        Pose jijija = new Pose(x,y,heading);
+        if (result != null && result.isValid()) {
+       Pose3D botpose = result.getBotpose();
 
-        return new Pose(
-                result.getBotpose_MT2().getPosition().x,
-                result.getBotpose_MT2().getPosition().y,
-                result.getBotpose_MT2().getOrientation().getYaw(AngleUnit.RADIANS),
-                FTCCoordinates.INSTANCE)
-                .getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+        Position poseInches=botpose.getPosition().toUnit(DistanceUnit.INCH);
+
+        jijija = new Pose(72 - poseInches.x, poseInches.y + 72 , heading, InvertedFTCCoordinates.INSTANCE).getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+
+
+        }
+
+
+        return jijija;
+
+
+    }
+
+    public Pose getPedroPose() {
+        LLResult result = camera.getLatestResult();
+
+        if (result != null && result.isValid()) {
+            Pose3D botpose = result.getBotpose();
+
+            Position poseInches = botpose.getPosition().toUnit(DistanceUnit.INCH);
+
+            Pose rawPose = new Pose(
+                    72 - poseInches.x,
+                    poseInches.y + 72,
+                    botpose.getOrientation().getYaw(),
+                    InvertedFTCCoordinates.INSTANCE
+            );
+
+            return rawPose.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+        }
+
+        // Return null (or a default Pose) if no valid data is found
+        return null;
+
     }
 
 
@@ -88,18 +118,23 @@ public class Vision extends SubsystemBase {
 
     @Override
     public void periodic() {
+
         result = camera.getLatestResult();
 
 
-        if (result != null) {
-
+        Pose posePedro;
+        if (result != null && result.isValid()) {
             Pose3D botpose = result.getBotpose();
-
-            telemetry.addData("Turn Power", getTurnPower());
+            Position poseInches=botpose.getPosition().toUnit(DistanceUnit.INCH);
+            posePedro = new Pose(72 - poseInches.x, poseInches.y + 72 , botpose.getOrientation().getYaw(), InvertedFTCCoordinates.INSTANCE).getAsCoordinateSystem(PedroCoordinates.INSTANCE.INSTANCE);
+            telemetry.addData("pedroPoints", "x="+posePedro.getX()+";y="+posePedro.getY());
             telemetry.addData("Ty", getTy());
             telemetry.addData("Tx", getTx());
-
-
         }
+
+
+
+
+
     }
 }

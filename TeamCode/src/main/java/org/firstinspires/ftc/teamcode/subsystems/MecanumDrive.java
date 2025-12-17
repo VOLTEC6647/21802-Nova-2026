@@ -33,10 +33,10 @@ public class MecanumDrive extends SubsystemBase {
         backLeft = hardwareMap.get(DcMotorEx.class, "BL");
         backRight = hardwareMap.get(DcMotorEx.class, "BR");
 
-        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
-        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontLeft.setDirection(DcMotorSimple.Direction.FORWARD);
+        backLeft.setDirection(DcMotorSimple.Direction.REVERSE );
         frontRight.setDirection(DcMotorSimple.Direction.FORWARD);
-        backRight.setDirection(DcMotorSimple.Direction.FORWARD );
+        backRight.setDirection(DcMotorSimple.Direction.REVERSE );
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -54,11 +54,10 @@ public class MecanumDrive extends SubsystemBase {
     }
 
     public void teleopDrive(double x , double y, double rx, double multiplier, double botHeading) {
-
         rx *= -1;
 
-        double rotX = x * Math.cos(botHeading) - y * Math.sin(botHeading);
-        double rotY = x * Math.sin(botHeading) + y * Math.cos(  botHeading);
+        double rotX = x * Math.cos(-botHeading) - y * Math.sin(-botHeading);
+        double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
 
         rotX *= 1.1; // counteract imperfect strafe
 

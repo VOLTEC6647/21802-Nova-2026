@@ -1,33 +1,28 @@
 package org.firstinspires.ftc.teamcode.commands;
 
-
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.pedropathing.follower.Follower;
-
-import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 
-import org.firstinspires.ftc.teamcode.pedroPathing.Tuning;
 
 
-// Credit 21802 bc im lazy
 public class FollowPathCommand extends CommandBase {
-
     private final Follower follower;
-    private final PathChain path;
+    private final PathChain pathChain;
     private boolean holdEnd = true;
-    Tuning tuning;
 
     public FollowPathCommand(Follower follower, PathChain path) {
         this.follower = follower;
-        this.path = path;
-    }
-
-    public FollowPathCommand(Follower follower, Path path) {
-        this(follower, new PathChain(path));
+        this.pathChain = path;
     }
 
 
+    /**
+     * Decides whether or not to make the robot maintain its position once the path ends.
+     *
+     * @param holdEnd If the robot should maintain its ending position
+     * @return This command for compatibility in command groups
+     */
     public FollowPathCommand setHoldEnd(boolean holdEnd) {
         this.holdEnd = holdEnd;
         return this;
@@ -35,7 +30,7 @@ public class FollowPathCommand extends CommandBase {
 
     @Override
     public void initialize() {
-        follower.followPath(path, holdEnd);
+        follower.followPath(pathChain, holdEnd);
     }
 
     @Override
@@ -46,10 +41,5 @@ public class FollowPathCommand extends CommandBase {
     @Override
     public void execute() {
         follower.update();
-        Tuning.drawCurrent();
-
-
-
-
     }
 }

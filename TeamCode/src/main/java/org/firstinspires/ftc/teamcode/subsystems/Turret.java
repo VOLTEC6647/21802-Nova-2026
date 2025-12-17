@@ -1,43 +1,53 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import static org.firstinspires.ftc.teamcode.Robot.startPose;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.Subsystem;
 import com.arcrobotics.ftclib.controller.PIDFController;
 import com.arcrobotics.ftclib.geometry.Vector2d;
-import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 public class Turret implements Subsystem {
 
     private final DcMotorEx turret;
-    private MultipleTelemetry telemetry;
-    private final Pose BlueScore = new Pose(15.36, 129);
-    private final double TICKS_PER_DEGREE =  22.76;
+    private final Servo hood;
+    private final MultipleTelemetry telemetry;
+    private final Pose BlueScore = new Pose(144, 144);
     int targetPositionTicks = 0;
     @Config
     public static class TurretPIDF{
-        public static double kp = 1;
+        public static double kp = 0.01;
         public static double ki = 0;
-        public static double kd = 0.05;
-        public static double kf = -0.005;
+        public static double kd = 0;
+        public static double kf = 0;
     }
+    @Config
+    public static class HoodRegression {
+        public static double a = 0.0;
+        public static double b = 0.0;
+        public static double c = 0.5;
+
+        public static double hoodMin = 0.0;
+        public static double hoodMax = 1.0;
+    }
+    double TICKS_PER_DEGREE = 3.759555555555556;
     private final PIDFController pid = new PIDFController(
             TurretPIDF.kp,
             TurretPIDF.ki,
             TurretPIDF.kd,
             TurretPIDF.kf
     );
+    double relativeAngleDegrees;
+    double currentDistance = 0;
 
     public Turret(HardwareMap h, Telemetry t) {
         this.telemetry = new MultipleTelemetry(t, FtcDashboard.getInstance().getTelemetry());
@@ -46,21 +56,50 @@ public class Turret implements Subsystem {
         turret = h.get(DcMotorEx.class,"turret");
         turret.setDirection(DcMotorSimple.Direction.FORWARD);
         turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        hood = h.get(Servo.class, "hood");
+
 
 
     }
+    public void resetEncoders(){
+        turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
 
 
     @Override
     public void periodic(){
+        telemetry.addData("turret degrees", relativeAngleDegrees);
+        telemetry.addData("current Degrees", turret.getCurrentPosition());
+        double currentDegrees = turret.getCurrentPosition() / TICKS_PER_DEGREE;
 
 
-
+        telemetry.addData("Current Degrees", currentDegrees);
 
     }
     public void setTurret(double x, double y, double heading){
+        currentDistance = Math.hypot(BlueScore.getX() - x, BlueScore.getY() - y);
+
+        double targetHoodPos = (HoodRegression.a * Math.pow(currentDistance, 2)) +
+                (HoodRegression.b * currentDistance) +
+                HoodRegression.c;
+
+        double safeHoodPos = Range.clip(targetHoodPos, HoodRegression.hoodMin, HoodRegression.hoodMax);
+
+        hood.setPosition(0);
+
+        telemetry.addData("X", x);
+        telemetry.addData("Y", y);
+        telemetry.addData("Heading", heading);
+
+
+        pid.setPIDF(TurretPIDF.kp,
+                TurretPIDF.ki,
+                TurretPIDF.kd,
+                TurretPIDF.kf);
+
         Vector2d targetVector = new Vector2d(
                 BlueScore.getX() - x,
                 BlueScore.getY() - y
@@ -70,26 +109,32 @@ public class Turret implements Subsystem {
 
         double relativeAngleRadians = targetAngleRadians - heading;
 
-        double relativeAngleDegrees = Math.toDegrees(relativeAngleRadians);
-
+        relativeAngleDegrees = Math.toDegrees(relativeAngleRadians);
 
         while (relativeAngleDegrees > 180) relativeAngleDegrees -= 360;
         while (relativeAngleDegrees <= -180) relativeAngleDegrees += 360;
 
         // Can turn 135 deg left
-        double TURRET_MIN_ANGLE_DEGREES = -135.0;
+        double TURRET_MIN_ANGLE_DEGREES = -110.0;
         // Can turn 135 deg right
-        double TURRET_MAX_ANGLE_DEGREES = 135.0;
+        double TURRET_MAX_ANGLE_DEGREES = 110.0;
 
         double MaxAngleDegrees = Math.max(TURRET_MIN_ANGLE_DEGREES,
                 Math.min(TURRET_MAX_ANGLE_DEGREES, relativeAngleDegrees));
 
+         //(384.5*3.52) / 360.00
         targetPositionTicks = (int) (MaxAngleDegrees * TICKS_PER_DEGREE);
 
         turret.setTargetPosition(targetPositionTicks);
 
         double pidOutput = pid.calculate(turret.getCurrentPosition(), targetPositionTicks);
+        if (pidOutput > 1){
+            pidOutput = 0.34;
+        }
 
+        if (pidOutput < -1){
+            pidOutput = -0.34;
+        }
         turret.setPower(pidOutput);
 
 

@@ -7,6 +7,8 @@ import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.stopRobot;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.telemetryM;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.bylazar.configurables.PanelsConfigurables;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.configurables.annotations.IgnoreConfigurable;
@@ -985,6 +987,11 @@ class Line extends OpMode {
 
         telemetryM.debug("Driving Forward?: " + forward);
         telemetryM.update(telemetry);
+        TelemetryPacket posePacket = new TelemetryPacket();
+        posePacket.put("Pose x", follower.getPose().getX());
+        posePacket.put("Pose y", follower.getPose().getY());
+        posePacket.put("Pose heading", follower.getPose().getHeading());
+        FtcDashboard.getInstance().sendTelemetryPacket(posePacket);
     }
 }
 
