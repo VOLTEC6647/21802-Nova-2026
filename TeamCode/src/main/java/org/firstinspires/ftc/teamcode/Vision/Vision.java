@@ -72,47 +72,28 @@ public class Vision extends SubsystemBase {
         }
         return result.getTy();
     }
-    public Pose mt(double x, double y, double heading) {
-        Pose jijija = new Pose(x,y,heading);
-        if (result != null && result.isValid()) {
-       Pose3D botpose = result.getBotpose();
-
-        Position poseInches=botpose.getPosition().toUnit(DistanceUnit.INCH);
-
-        jijija = new Pose(72 - poseInches.x, poseInches.y + 72 , heading, InvertedFTCCoordinates.INSTANCE).getAsCoordinateSystem(PedroCoordinates.INSTANCE);
-
-
-        }
-
-
-        return jijija;
-
-
-    }
-
-    public Pose getPedroPose() {
-        LLResult result = camera.getLatestResult();
+    public Pose getVisionCorrection(double currentHeading) {
+        result = camera.getLatestResult();
+        camera.updateRobotOrientation(currentHeading);
 
         if (result != null && result.isValid()) {
+
             Pose3D botpose = result.getBotpose();
-
             Position poseInches = botpose.getPosition().toUnit(DistanceUnit.INCH);
 
-            Pose rawPose = new Pose(
-                    72 - poseInches.x,
-                    poseInches.y + 72,
-                    botpose.getOrientation().getYaw(),
+
+            Pose validPose = new Pose(
+                    -(72 - poseInches.x),
+                    -(poseInches.y + 72),
+                    currentHeading,
                     InvertedFTCCoordinates.INSTANCE
             );
 
-            return rawPose.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
+            return validPose.getAsCoordinateSystem(PedroCoordinates.INSTANCE);
         }
 
-        // Return null (or a default Pose) if no valid data is found
         return null;
-
     }
-
 
 
 

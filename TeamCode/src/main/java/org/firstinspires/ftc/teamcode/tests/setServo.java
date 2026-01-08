@@ -19,7 +19,6 @@ public class setServo extends CommandOpMode {
     private GamepadEx driverGamepad;
     private GamepadEx operatorGamepad;
 
-    Hood hood;
 
     public void initialize() {
 
@@ -36,9 +35,6 @@ public class setServo extends CommandOpMode {
         telem.addData("status","init");
         telem.update();
 
-        hood = new Hood(hardwareMap, telemetry);
-        hood.register();
-
 
     }
 
@@ -52,7 +48,6 @@ public class setServo extends CommandOpMode {
     public void run() {
         CommandScheduler.getInstance().run();
 
-        hood.setPosition(targetServo.hoodPos);
 
 
 

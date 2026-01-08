@@ -19,9 +19,11 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class Turret implements Subsystem {
 
     private final DcMotorEx turret;
-    private final Servo hood;
     private final MultipleTelemetry telemetry;
-    private final Pose BlueScore = new Pose(144, 144);
+    private final Pose RedScore = new Pose(144, 136.5 );
+    private final Pose BlueScore = new Pose(0, 140 );
+
+
     int targetPositionTicks = 0;
     @Config
     public static class TurretPIDF{
@@ -32,10 +34,6 @@ public class Turret implements Subsystem {
     }
     @Config
     public static class HoodRegression {
-        public static double a = 0.0;
-        public static double b = 0.0;
-        public static double c = 0.5;
-
         public static double hoodMin = 0.0;
         public static double hoodMax = 1.0;
     }
@@ -48,6 +46,7 @@ public class Turret implements Subsystem {
     );
     double relativeAngleDegrees;
     double currentDistance = 0;
+    Servo hood;
 
     public Turret(HardwareMap h, Telemetry t) {
         this.telemetry = new MultipleTelemetry(t, FtcDashboard.getInstance().getTelemetry());
@@ -56,8 +55,10 @@ public class Turret implements Subsystem {
         turret = h.get(DcMotorEx.class,"turret");
         turret.setDirection(DcMotorSimple.Direction.FORWARD);
         turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
         hood = h.get(Servo.class, "hood");
+
+        hood.setPosition(0);
+
 
 
 
@@ -77,18 +78,73 @@ public class Turret implements Subsystem {
 
 
         telemetry.addData("Current Degrees", currentDegrees);
+        telemetry.addData("distance",currentDistance);
+
 
     }
-    public void setTurret(double x, double y, double heading){
+    public void setTurretRED(double x, double y, double heading){
+        currentDistance = Math.hypot(RedScore.getX() - x, RedScore.getY() - y);
+
+        double targetServoPos = -1.907 + (0.499 * Math.log(currentDistance));
+        double safeHoodPos = Range.clip(targetServoPos, HoodRegression.hoodMin, HoodRegression.hoodMax);
+
+        hood.setPosition(safeHoodPos);
+
+
+
+
+        telemetry.addData("X", x);
+        telemetry.addData("Y", y);
+        telemetry.addData("Heading", heading);
+
+
+        pid.setPIDF(TurretPIDF.kp,
+                TurretPIDF.ki,
+                TurretPIDF.kd,
+                TurretPIDF.kf);
+
+        Vector2d targetVector = new Vector2d(
+                RedScore.getX() - x,
+                RedScore.getY() - y
+        );
+
+        double targetAngleRadians = targetVector.angle();
+        double relativeAngleRadians = targetAngleRadians - heading;
+
+        relativeAngleDegrees = Math.toDegrees(relativeAngleRadians);
+        while (relativeAngleDegrees > 180) relativeAngleDegrees -= 360;
+        while (relativeAngleDegrees <= -180) relativeAngleDegrees += 360;
+
+        // Can turn 135 deg left
+        double TURRET_MIN_ANGLE_DEGREES = -180.0;
+        // Can turn 135 deg right
+        double TURRET_MAX_ANGLE_DEGREES = 110.0;
+        double MaxAngleDegrees = Math.max(TURRET_MIN_ANGLE_DEGREES,
+                Math.min(TURRET_MAX_ANGLE_DEGREES, relativeAngleDegrees));
+         //(384.5*3.52) / 360.00
+        targetPositionTicks = (int) (MaxAngleDegrees * TICKS_PER_DEGREE);
+
+        turret.setTargetPosition(targetPositionTicks);
+
+        double pidOutput = pid.calculate(turret.getCurrentPosition(), targetPositionTicks);
+        if (pidOutput > 1){
+            pidOutput = 0.15;
+        }
+
+        if (pidOutput < -1){
+            pidOutput = -0.15;
+        }
+        turret.setPower(pidOutput);
+
+
+    }
+    public void setTurretBLUE(double x, double y, double heading){
         currentDistance = Math.hypot(BlueScore.getX() - x, BlueScore.getY() - y);
 
-        double targetHoodPos = (HoodRegression.a * Math.pow(currentDistance, 2)) +
-                (HoodRegression.b * currentDistance) +
-                HoodRegression.c;
+        double targetServoPos = -1.907 + (0.499 * Math.log(currentDistance));
+        double safeHoodPos = Range.clip(targetServoPos, HoodRegression.hoodMin, HoodRegression.hoodMax);
 
-        double safeHoodPos = Range.clip(targetHoodPos, HoodRegression.hoodMin, HoodRegression.hoodMax);
-
-        hood.setPosition(0);
+        hood.setPosition(safeHoodPos);
 
         telemetry.addData("X", x);
         telemetry.addData("Y", y);
@@ -115,28 +171,30 @@ public class Turret implements Subsystem {
         while (relativeAngleDegrees <= -180) relativeAngleDegrees += 360;
 
         // Can turn 135 deg left
-        double TURRET_MIN_ANGLE_DEGREES = -110.0;
+        double TURRET_MIN_ANGLE_DEGREES = -180.0;
         // Can turn 135 deg right
         double TURRET_MAX_ANGLE_DEGREES = 110.0;
 
         double MaxAngleDegrees = Math.max(TURRET_MIN_ANGLE_DEGREES,
                 Math.min(TURRET_MAX_ANGLE_DEGREES, relativeAngleDegrees));
 
-         //(384.5*3.52) / 360.00
+        //(384.5*3.52) / 360.00
         targetPositionTicks = (int) (MaxAngleDegrees * TICKS_PER_DEGREE);
 
         turret.setTargetPosition(targetPositionTicks);
 
         double pidOutput = pid.calculate(turret.getCurrentPosition(), targetPositionTicks);
         if (pidOutput > 1){
-            pidOutput = 0.34;
+            pidOutput = 0.5;
         }
 
         if (pidOutput < -1){
-            pidOutput = -0.34;
+            pidOutput = -0.5;
         }
         turret.setPower(pidOutput);
 
 
     }
+
+
 }

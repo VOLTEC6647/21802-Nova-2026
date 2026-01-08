@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.arcrobotics.ftclib.command.Subsystem;
@@ -14,14 +15,22 @@ import org.firstinspires.ftc.teamcode.Bot;
 public class Shooter implements Subsystem {
 
     private DcMotorEx motor1;
+    double currentDistance;
+    public double targetVelocity;
     @Config
     public static class ShooterPIDF{
-        public static double kp = 12.5  ;
+        public static double kp = 170;
         public static double ki = 0.00;
         public static double kd = 0.00;
-         public static double kf = 13.83;
+         public static double kf = 13.428 ;
     }
-    public static double targetVelocity = -1900;
+    @Config
+    public static class a{
+        public static double velocity = 1000;
+
+    }
+    private final Pose RedScore = new Pose(144, 136.5 );
+    private final Pose BlueScore = new Pose(0, 136.5 );
     private MultipleTelemetry telemetry;
 
 
@@ -32,16 +41,20 @@ public class Shooter implements Subsystem {
 
         motor1 = hardwareMap.get(DcMotorEx.class, "shooter");
 
-        motor1.setDirection(DcMotorSimple.Direction.REVERSE);
+        motor1.setDirection(DcMotorSimple.Direction.FORWARD);
 
         motor1.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
-
-        motor1.setVelocityPIDFCoefficients(
+        PIDFCoefficients pid = new PIDFCoefficients(
                 ShooterPIDF.kp,
                 ShooterPIDF.ki,
                 ShooterPIDF.kd,
-                ShooterPIDF.kf
+                ShooterPIDF.kf);
+
+
+        motor1.setPIDFCoefficients(
+                DcMotorEx.RunMode.RUN_USING_ENCODER,
+                pid
         );
 
 
@@ -51,15 +64,41 @@ public class Shooter implements Subsystem {
     public void periodic(){
         double currentVelocity = motor1.getVelocity();
 
-        telemetry.addData("Target Velocity", targetVelocity);
         telemetry.addData("Current Velocity", currentVelocity);
+        telemetry.addData("shooter pw", motor1.getPower());
+
+
+        PIDFCoefficients pid = new PIDFCoefficients(
+                ShooterPIDF.kp,
+                ShooterPIDF.ki,
+                ShooterPIDF.kd,
+                ShooterPIDF.kf);
+
+
+        motor1.setPIDFCoefficients(
+                DcMotorEx.RunMode.RUN_USING_ENCODER,
+                pid
+        );
 
 
     }
-    public void setVelocity(){
+    public void setTargetVelocity(double velocity){
+        motor1.setVelocity(velocity);
+    }
+    public void setVelocityRED(double x, double y){
+        currentDistance = Math.hypot(RedScore.getX() - x, RedScore.getY() - y);
+
+        targetVelocity = 1093 * Math.exp(0.003 * currentDistance);
         motor1.setVelocity(targetVelocity);
-
-
-
     }
+    public void setVelocityBLUE(double x, double y){
+        currentDistance = Math.hypot(BlueScore.getX() - x, BlueScore.getY() - y);
+
+        targetVelocity = 1093 * Math.exp(0.003 * currentDistance);
+        motor1.setVelocity(targetVelocity);
+    }
+    public double getCurrentVelocity(){
+        return motor1.getVelocity();
+    }
+
 }

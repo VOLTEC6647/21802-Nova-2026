@@ -15,22 +15,24 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.teamcode.Bot;
 import org.firstinspires.ftc.teamcode.commands.FollowPathCommand;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.subsystems.Hood;
+import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
+import org.firstinspires.ftc.teamcode.subsystems.Shooter;
+import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
 
 @Config
 @Autonomous
-public class AutoExample extends LinearOpMode {
+public class AutoRed extends LinearOpMode {
 
-    public static Pose startingPose = new Pose(55.75, 7.3, Math.toRadians(0));
-    public static Pose heading = new Pose(55.75, 7.3, Math.toRadians(180));
-
-    private Follower follower;
+    public static Pose startingPose = new Pose(105.5579,132.711, Math.toRadians(0));
+    double heading = 0;
+    // 88.5, 7.3        105.5579,132.711
     private Bot bot;
     private MultipleTelemetry telem;
     private GamepadEx driverGamepad;
@@ -56,115 +58,153 @@ public class AutoExample extends LinearOpMode {
         Intake i = new Intake(hardwareMap, telem);
         i.register();
 
+        Shooter s = new Shooter(hardwareMap, telem);
+        s.register();
 
+        Turret t = new Turret(hardwareMap,telem);
+        t.resetEncoders();
+        t.register();
+
+        Indexer iN = new Indexer(hardwareMap, telem);
+        iN.register();
 
 
         SequentialCommandGroup auto = new SequentialCommandGroup(
 
                 new SequentialCommandGroup(
 
-                        new SequentialCommandGroup(
+
+                                new SequentialCommandGroup(
                                 new FollowPathCommand(f, f.pathBuilder()
                                          .addPath(
-                                                new BezierLine(
-                                                        startingPose, new Pose(55.75, 106.18698347107438)
-                                        )
-                                        )
-                                        .setConstantHeadingInterpolation(0)
+                                                 new BezierLine(new Pose(105.5579,132.711), new Pose(97.382, 100.4597))
+
+                                         )
+                                        .setConstantHeadingInterpolation(heading)
                                         .build()
                                 )
                         ),
                         new SequentialCommandGroup(
-                                new WaitCommand(3000)
+                                new WaitCommand(1000),
+
+                                new InstantCommand(()->{i.setPower(1);}),
+                                new InstantCommand(()->{iN.setPower(1);}),
+                                new WaitCommand(4500),
+                                new InstantCommand(()->{iN.setPower(0);})
+
+                                ),
+                        new SequentialCommandGroup(
+                                new FollowPathCommand(f, f.pathBuilder()
+                                        .addPath(
+                                                new BezierLine(new Pose(97.382, 100.4597), new Pose(97.382, 83.000))
+
+                                        )
+                                        .setConstantHeadingInterpolation(heading)
+                                        .build()
+                                )
+                        ),
+                        new SequentialCommandGroup(
+                               new InstantCommand(()->{i.setPower(1);}),
+                                new InstantCommand(()->{f.setMaxPower(0.75);})
+
+                                ),
+                        new SequentialCommandGroup(
+                                new FollowPathCommand(f, f.pathBuilder()
+                                        .addPath(
+                                                new BezierLine(new Pose(97.382, 83.000), new Pose(125.000, 83.000))
+
+                                        )
+                                        .setConstantHeadingInterpolation(heading)
+                                        .build()
+                                )
+                        ),
+                        new SequentialCommandGroup(
+                                new WaitCommand(1000),
+                                new InstantCommand(()->{f.setMaxPower(1);})
+
+
+
+                        ),
+
+                        new SequentialCommandGroup(
+                                new FollowPathCommand(f, f.pathBuilder()
+                                        .addPath(
+                                                new BezierLine(new Pose(125.000, 83.000),new Pose(97.382, 100.4597))
+
+                                        )
+                                        .setConstantHeadingInterpolation(heading)
+                                        .build()
+                                )
+                        ),
+                        new SequentialCommandGroup(
+                                new WaitCommand(750),
+
+                                new InstantCommand(()->{i.setPower(1);}),
+                                new InstantCommand(()->{iN.setPower(1);}),
+                                new WaitCommand(4500),
+                                new InstantCommand(()->{iN.setPower(0);})
+
                         ),
                         new SequentialCommandGroup(
                                 new FollowPathCommand(f, f.pathBuilder()
                                         .addPath(
-                                                new BezierLine(
-                                                        new Pose(55.75, 106.18698347107438), new Pose(39.7422520661157, 85.73708677685951)
-                                                )
+                                                new BezierLine(new Pose(97.382, 100.4597), new Pose(97.382, 58.500))
                                         )
-                                        .setConstantHeadingInterpolation(heading.getHeading())
+                                        .setConstantHeadingInterpolation(heading)
                                         .build()
                                 )
                         ),
                         new SequentialCommandGroup(
-                               new InstantCommand(()->{i.setPower(1);})
+                                new InstantCommand(()->{i.setPower(1);}),
+                                new InstantCommand(()->{f.setMaxPower(0.75);})
+
+
                         ),
                         new SequentialCommandGroup(
                                 new FollowPathCommand(f, f.pathBuilder()
                                         .addPath(
-                                                new BezierLine(
-                                                        new Pose(39.7422520661157, 85.73708677685951), new Pose(21.5 , 85.73708677685951)
-                                                )
+                                                new BezierLine(new Pose(97.382, 58.500), new Pose(133.000, 58.500))
+
                                         )
-                                        .setConstantHeadingInterpolation(heading.getHeading())
+                                        .setConstantHeadingInterpolation(heading)
                                         .build()
                                 )
                         ),
                         new SequentialCommandGroup(
-                                new FollowPathCommand(f, f.pathBuilder()
-                                        .addPath(
-                                                new BezierLine(
-                                                        new Pose(21.5, 85.73708677685951),  new Pose(55.75, 106.18698347107438)
-                                                )
-                                        )
-                                        .setConstantHeadingInterpolation(heading.getHeading())
-                                        .build()
-                                )
-                        ),
-                        new SequentialCommandGroup(
-                                new WaitCommand(3000)
+                                new WaitCommand(1000),
+                                new InstantCommand(()->{f.setMaxPower(1);})
+
+
                         ),
                         new SequentialCommandGroup(
                                 new FollowPathCommand(f, f.pathBuilder()
                                         .addPath(
-                                                new BezierLine(
-                                                        new Pose(55.75, 106.18698347107438),  new Pose(55.75, 63.4)
-                                                )
+                                                new BezierLine(new Pose(133.000, 58.500), new Pose(97.382, 58.09090909090909))
+
                                         )
-                                        .setConstantHeadingInterpolation(heading.getHeading())
-                                        .build()
-                                )
-                        ),
-                        new SequentialCommandGroup(
-                                new InstantCommand(()->{i.setPower(1);})
-                        ),
-                        new SequentialCommandGroup(
-                                new FollowPathCommand(f, f.pathBuilder()
-                                        .addPath(
-                                                new BezierLine(
-                                                        new Pose(55.75, 63.4), new Pose(14, 63.4)
-                                                )
-                                        )
-                                        .setConstantHeadingInterpolation(heading.getHeading())
+                                        .setConstantHeadingInterpolation(heading)
                                         .build()
                                 )
                         ),
                         new SequentialCommandGroup(
                                 new FollowPathCommand(f, f.pathBuilder()
                                         .addPath(
-                                                new BezierLine(
-                                                        new Pose(14, 63.4),new Pose(60, 63.4)
-                                                )
+                                                new BezierLine(new Pose(97.382, 58.09090909090909),new Pose(97.382, 100.4597))
+
                                         )
-                                        .setConstantHeadingInterpolation(heading.getHeading())
+                                        .setConstantHeadingInterpolation(heading)
                                         .build()
                                 )
                         ),
                         new SequentialCommandGroup(
-                                new FollowPathCommand(f, f.pathBuilder()
-                                        .addPath(
-                                                new BezierLine(
-                                                        new Pose(60, 63.4), new Pose(55.75, 106.18698347107438)
-                                                )
-                                        )
-                                        .setConstantHeadingInterpolation(heading.getHeading())
-                                        .build()
-                                )
+                                new WaitCommand(1000),
+
+                                new InstantCommand(()->{i.setPower(1);}),
+                                new InstantCommand(()->{iN.setPower(1);}),
+                                new WaitCommand(4500),
+                                new InstantCommand(()->{iN.setPower(0);})
+
                         )
-
-
                 )
         );
 
@@ -175,6 +215,8 @@ public class AutoExample extends LinearOpMode {
             CommandScheduler.getInstance().run();
             f.update();
 
+            t.setTurretRED(f.getPose().getX(),f.getPose().getY(),f.getPose().getHeading());
+            s.setVelocityRED(f.getPose().getX(),f.getPose().getY());
             telem.addData("POSE", f.getPose());
             telem.update();
 

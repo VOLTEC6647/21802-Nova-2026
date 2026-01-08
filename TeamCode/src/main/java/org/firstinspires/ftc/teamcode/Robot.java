@@ -1,44 +1,40 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.ftc.InvertedFTCCoordinates;
-import com.pedropathing.ftc.PoseConverter;
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.HeadingInterpolator;
-import com.pedropathing.paths.Path;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.util.ReadWriteFile;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Vision.Vision;
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
-import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
 
-import java.util.function.Supplier;
+import java.io.File;
 
 public class Robot {
     private HardwareMap h;
     private Telemetry t;
-    private Gamepad g1a, g2a, g1, g2;
+    private final Gamepad g1a;
+    private final Gamepad g2a;
+    private final Gamepad g1;
+    private final Gamepad g2;
     private final Turret tU;
     private final Shooter s;
     private final Intake i;
     private final Indexer iN;
-    private final Vision v;
     private final Follower f;
-    private boolean automatedDrive = false;
-    public static Pose startPose = new Pose(55.75,7.3,0, PedroCoordinates.INSTANCE);
+    public File myFileName;
+    public String team;
+    public static Pose startPoseRED = new Pose(97.382, 100.4597,0, PedroCoordinates.INSTANCE);
+    public static Pose startPoseBLUE = new Pose(46.618, 100.4597,Math.toRadians(180), PedroCoordinates.INSTANCE);
 
 
     public Robot(HardwareMap h, Telemetry t, Gamepad g1a, Gamepad g2a) {
@@ -48,18 +44,25 @@ public class Robot {
         this.g1a = g1a;
         this.g2a = g2a;
 
-
-
         tU = new Turret(this.h, this.t);
-        tU.resetEncoders();
         s = new Shooter(this.h,this.t);
-         i = new Intake(this.h,this.t);
+        i = new Intake(this.h,this.t);
         iN = new Indexer(this.h,this.t);
-        v = new Vision(this.h,this.t);
-
 
         f = Constants.createFollower(this.h);
-        f.setStartingPose(startPose);
+
+        try {
+            myFileName = AppUtil.getInstance().getSettingsFile("team.txt");
+            team = ReadWriteFile.readFile(myFileName).trim();
+        } catch (Exception e) {
+            team = "red";
+        }
+
+        if (team.equals("blue")){
+            f.setStartingPose(startPoseBLUE);
+        } else {
+            f.setStartingPose(startPoseRED);
+        }
 
         this.g1 = new Gamepad();
         this.g2 = new Gamepad();
@@ -68,40 +71,26 @@ public class Robot {
     }
 
     public void Controls(){
+
         g1.copy(g1a);
         g2.copy(g2a);
 
+        if (team.equals("blue")){
+            tU.setTurretBLUE(f.getPose().getX(),f.getPose().getY(),f.getPose().getHeading());
+            f.setTeleOpDrive(g1.left_stick_y, g1.left_stick_x,   -g1.right_stick_x, false);
+            s.setVelocityBLUE(f.getPose().getX(),f.getPose().getY());
 
-        f.setPose(v.mt(f.getPose().getX(),f.getPose().getY(),f.getPose().getHeading()));
-
-
-        tU.setTurret(f.getPose().getX(),f.getPose().getY(),f.getPose().getHeading());
-
-        Supplier<PathChain> pathChain = () -> f.pathBuilder()
-                .addPath(new Path(new BezierLine(f::getPose, new Pose(38.4, 33))))
-                .setHeadingInterpolation(HeadingInterpolator.linearFromPoint(f::getHeading, Math.toRadians(0), 0.8))
-                .build();
-
-
-        if (g1.dpad_left && !automatedDrive) {
-            f.followPath(pathChain.get());
-            automatedDrive = true;
-        }
-
-        if (automatedDrive && !f.isBusy()) {
-            f.startTeleopDrive();
-            automatedDrive = false;
-        }
-
-        if (!automatedDrive) {
-            f.setTeleOpDrive(-g1.left_stick_y, -g1.left_stick_x,   g1.right_stick_x, false);
-
+        } else {
+            tU.setTurretRED(f.getPose().getX(),f.getPose().getY(),f.getPose().getHeading());
+            f.setTeleOpDrive(-g1.left_stick_y, -g1.left_stick_x,   -g1.right_stick_x, false);
+            s.setVelocityRED(f.getPose().getX(),f.getPose().getY());
 
         }
+
+
 
 
         if(g1.a){
-            s.setVelocity();
             i.setPower(1);
         } else {
             i.setPower(0);
@@ -111,13 +100,14 @@ public class Robot {
         } else {
             iN.setPower(0);
         }
+
+
     }
     public void tPeriodic() {
         tU.periodic();
         iN.periodic();
         i.periodic();
         s.periodic();  
-        //d.periodic();
         f.update();
         t.update();
         TelemetryPacket posePacket = new TelemetryPacket();
@@ -130,7 +120,7 @@ public class Robot {
 
     }
     public void tStart() {
-        f.startTeleopDrive();
+        f.startTeleopDrive(true);
     }
 }
 
