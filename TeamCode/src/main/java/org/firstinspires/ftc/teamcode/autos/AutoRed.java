@@ -24,6 +24,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
+import org.firstinspires.ftc.teamcode.utils.PoseStorage;
 
 
 @Config
@@ -214,6 +215,8 @@ public class AutoRed extends LinearOpMode {
         while (opModeIsActive()) {
             CommandScheduler.getInstance().run();
             f.update();
+
+            PoseStorage.currentPose = f.getPose();
 
             t.setTurretRED(f.getPose().getX(),f.getPose().getY(),f.getPose().getHeading());
             s.setVelocityRED(f.getPose().getX(),f.getPose().getY());

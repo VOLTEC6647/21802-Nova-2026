@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.subsystems.Shooter;
 import org.firstinspires.ftc.teamcode.subsystems.Turret;
+import org.firstinspires.ftc.teamcode.utils.PoseStorage;
 
 import java.io.File;
 
@@ -58,10 +59,17 @@ public class Robot {
             team = "red";
         }
 
-        if (team.equals("blue")){
-            f.setStartingPose(startPoseBLUE);
-        } else {
-            f.setStartingPose(startPoseRED);
+        if (PoseStorage.currentPose != null) {
+            f.setStartingPose(PoseStorage.currentPose);
+
+
+        }
+        else {
+            if (team.equals("blue")){
+                f.setStartingPose(startPoseBLUE);
+            } else {
+                f.setStartingPose(startPoseRED);
+            }
         }
 
         this.g1 = new Gamepad();
@@ -80,14 +88,20 @@ public class Robot {
             f.setTeleOpDrive(g1.left_stick_y, g1.left_stick_x,   -g1.right_stick_x, false);
             s.setVelocityBLUE(f.getPose().getX(),f.getPose().getY());
 
+            if (g1.options){
+                f.setPose(null);
+            }
+
         } else {
             tU.setTurretRED(f.getPose().getX(),f.getPose().getY(),f.getPose().getHeading());
             f.setTeleOpDrive(-g1.left_stick_y, -g1.left_stick_x,   -g1.right_stick_x, false);
             s.setVelocityRED(f.getPose().getX(),f.getPose().getY());
 
+            if (g1.options){
+                f.setPose(null);
+            }
+
         }
-
-
 
 
         if(g1.a){
