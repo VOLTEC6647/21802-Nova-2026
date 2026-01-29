@@ -19,15 +19,16 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class Turret implements Subsystem {
 
     private final DcMotorEx turret;
-    private final MultipleTelemetry telemetry;
-    private final Pose RedScore = new Pose(144, 136.5 );
-    private final Pose BlueScore = new Pose(0, 140 );
+    private final MultipleTelemetry telemetry;private final Pose RedScore = new Pose(144, 139.4
+    );
+    private final Pose BlueScore = RedScore.mirror();
 
 
     int targetPositionTicks = 0;
+
     @Config
     public static class TurretPIDF{
-        public static double kp = 0.01;
+        public static double kp = 0.0075;
         public static double ki = 0;
         public static double kd = 0;
         public static double kf = 0;
@@ -35,7 +36,7 @@ public class Turret implements Subsystem {
     @Config
     public static class HoodRegression {
         public static double hoodMin = 0.0;
-        public static double hoodMax = 1.0;
+        public static double hoodMax = 0.8;
     }
     double TICKS_PER_DEGREE = 3.759555555555556;
     private final PIDFController pid = new PIDFController(
@@ -56,7 +57,7 @@ public class Turret implements Subsystem {
         turret.setDirection(DcMotorSimple.Direction.FORWARD);
         turret.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         hood = h.get(Servo.class, "hood");
-
+        hood.setDirection(Servo.Direction.FORWARD);
         hood.setPosition(0);
 
 
@@ -67,11 +68,15 @@ public class Turret implements Subsystem {
         turret.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turret.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
+    public void setPos(double pos){
+        hood.setPosition(pos);
+    }
 
 
 
     @Override
     public void periodic(){
+
         telemetry.addData("turret degrees", relativeAngleDegrees);
         telemetry.addData("current Degrees", turret.getCurrentPosition());
         double currentDegrees = turret.getCurrentPosition() / TICKS_PER_DEGREE;
@@ -82,16 +87,14 @@ public class Turret implements Subsystem {
 
 
     }
+
     public void setTurretRED(double x, double y, double heading){
         currentDistance = Math.hypot(RedScore.getX() - x, RedScore.getY() - y);
 
-        double targetServoPos = -1.907 + (0.499 * Math.log(currentDistance));
+        double targetServoPos = (-2e-5 * Math.pow(currentDistance, 2)) + (0.0122 * currentDistance) - 0.5819;
         double safeHoodPos = Range.clip(targetServoPos, HoodRegression.hoodMin, HoodRegression.hoodMax);
 
-        hood.setPosition(safeHoodPos);
-
-
-
+         hood.setPosition(safeHoodPos);
 
         telemetry.addData("X", x);
         telemetry.addData("Y", y);
@@ -107,6 +110,8 @@ public class Turret implements Subsystem {
                 RedScore.getX() - x,
                 RedScore.getY() - y
         );
+
+
 
         double targetAngleRadians = targetVector.angle();
         double relativeAngleRadians = targetAngleRadians - heading;
@@ -128,23 +133,24 @@ public class Turret implements Subsystem {
 
         double pidOutput = pid.calculate(turret.getCurrentPosition(), targetPositionTicks);
         if (pidOutput > 1){
-            pidOutput = 0.15;
+            pidOutput = 0.4;
         }
 
         if (pidOutput < -1){
-            pidOutput = -0.15;
+            pidOutput = -0.4;
         }
         turret.setPower(pidOutput);
 
 
     }
+
     public void setTurretBLUE(double x, double y, double heading){
         currentDistance = Math.hypot(BlueScore.getX() - x, BlueScore.getY() - y);
 
-        double targetServoPos = -1.907 + (0.499 * Math.log(currentDistance));
+        double targetServoPos = (-2e-5 * Math.pow(currentDistance, 2)) + (0.0122 * currentDistance) - 0.5819;
         double safeHoodPos = Range.clip(targetServoPos, HoodRegression.hoodMin, HoodRegression.hoodMax);
 
-        hood.setPosition(safeHoodPos);
+         hood.setPosition(safeHoodPos);
 
         telemetry.addData("X", x);
         telemetry.addData("Y", y);
@@ -185,14 +191,33 @@ public class Turret implements Subsystem {
 
         double pidOutput = pid.calculate(turret.getCurrentPosition(), targetPositionTicks);
         if (pidOutput > 1){
-            pidOutput = 0.5;
+            pidOutput = 0.4;
         }
 
         if (pidOutput < -1){
-            pidOutput = -0.5;
+            pidOutput = -0.4;
         }
         turret.setPower(pidOutput);
 
+
+    }
+    public void setTurretToZero() {
+
+        targetPositionTicks = 0;
+
+        pid.setPIDF(TurretPIDF.kp, TurretPIDF.ki, TurretPIDF.kd, TurretPIDF.kf);
+
+        double pidOutput = pid.calculate(turret.getCurrentPosition(), targetPositionTicks);
+
+        if (pidOutput > 1){
+            pidOutput = 0.15;
+        }
+        if (pidOutput < -1){
+            pidOutput = -0.15;
+        }
+
+        turret.setTargetPosition(targetPositionTicks);
+        turret.setPower(pidOutput);
 
     }
 

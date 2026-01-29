@@ -15,6 +15,8 @@ import org.firstinspires.ftc.teamcode.Bot;
 public class Indexer implements Subsystem {
 
     private CRServo indexer;
+    private CRServo indexer2;
+
     public double power = 0;
     private MultipleTelemetry telemetry;
 
@@ -24,7 +26,12 @@ public class Indexer implements Subsystem {
         this.telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
         indexer = hardwareMap.get(CRServo.class,"indexer");
+        indexer2 = hardwareMap.get(CRServo.class,"indexer2");
+
         indexer.setDirection(DcMotorSimple.Direction.REVERSE);
+
+
+
     }
 
 
@@ -34,7 +41,9 @@ public class Indexer implements Subsystem {
     }
     public void setPower(double power){
         power = power;
-        indexer.setPower(-power);
+        indexer.setPower(power);
+        indexer2.setPower(-power);
+
 
 
     }

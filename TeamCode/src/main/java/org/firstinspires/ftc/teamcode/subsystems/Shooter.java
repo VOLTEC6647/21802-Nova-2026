@@ -19,16 +19,12 @@ public class Shooter implements Subsystem {
     public double targetVelocity;
     @Config
     public static class ShooterPIDF{
-        public static double kp = 170;
+        public static double kp = 320;
         public static double ki = 0.00;
         public static double kd = 0.00;
-         public static double kf = 13.428 ;
+         public static double   kf = 13.428 ;
     }
-    @Config
-    public static class a{
-        public static double velocity = 1000;
 
-    }
     private final Pose RedScore = new Pose(144, 136.5 );
     private final Pose BlueScore = new Pose(0, 136.5 );
     private MultipleTelemetry telemetry;
@@ -82,19 +78,30 @@ public class Shooter implements Subsystem {
 
 
     }
-    public void setTargetVelocity(double velocity){
-        motor1.setVelocity(velocity);
+    public double tarVelRED(double x, double y){
+        currentDistance = Math.hypot(RedScore.getX() - x, RedScore.getY() - y);
+
+        return targetVelocity = 918.39 * Math.exp(0.0035 * currentDistance);
+    }
+    public double tarVelBLUE(double x, double y){
+        currentDistance = Math.hypot(BlueScore.getX() - x, BlueScore.getY() - y);
+
+        return  targetVelocity = 899.23 * Math.exp(0.0036 * currentDistance);
+
+    }
+    public void setTargetVelocity(double vel){
+        motor1.setVelocity(vel);
     }
     public void setVelocityRED(double x, double y){
         currentDistance = Math.hypot(RedScore.getX() - x, RedScore.getY() - y);
 
-        targetVelocity = 1093 * Math.exp(0.003 * currentDistance);
+        targetVelocity = 918.39 * Math.exp(0.0035 * currentDistance);
         motor1.setVelocity(targetVelocity);
     }
     public void setVelocityBLUE(double x, double y){
         currentDistance = Math.hypot(BlueScore.getX() - x, BlueScore.getY() - y);
 
-        targetVelocity = 1093 * Math.exp(0.003 * currentDistance);
+        targetVelocity = 899.23 * Math.exp(0.0036 * currentDistance);
         motor1.setVelocity(targetVelocity);
     }
     public double getCurrentVelocity(){
